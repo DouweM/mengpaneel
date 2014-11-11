@@ -63,7 +63,7 @@ module Mengpaneel
       super(@distinct_id, event, properties)
     end
 
-    %i(track_links track_forms alias set_config get_config).each do |name|
+    %w(track_links track_forms alias set_config get_config).map(&:to_sym).each do |name|
       define_method(name) do |*args|
         # Not supported on server side
       end
@@ -78,7 +78,7 @@ module Mengpaneel
         super(tracker.token)
       end
 
-      %i(set set_once increment append track_charge clear_charges delete_user).each do |method_name|
+      %w(set set_once increment append track_charge clear_charges delete_user).map(&:to_sym).each do |method_name|
         define_method(method_name) do |*args|
           args.unshift(tracker.distinct_id) unless args.first == tracker.distinct_id
           super(*args)
