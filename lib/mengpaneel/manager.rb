@@ -4,7 +4,7 @@ require "mengpaneel/flusher"
 
 module Mengpaneel
   class Manager
-    MODES = %i(before_setup setup tracking).freeze
+    MODES = %w(before_setup setup tracking).map(&:to_sym).freeze
 
     attr_reader   :controller
     attr_reader   :mode
@@ -41,7 +41,7 @@ module Mengpaneel
     end
 
     def all_calls
-      call_proxies.map { |mode, call_proxy| [mode, call_proxy.all_calls] }.to_h
+      Hash[call_proxies.map { |mode, call_proxy| [mode, call_proxy.all_calls] }]
     end
 
     def with_mode(mode, &block)
