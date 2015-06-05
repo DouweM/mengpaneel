@@ -1,5 +1,6 @@
 require "mengpaneel/strategy/base"
 require "mengpaneel/strategy/server_side"
+require "json"
 
 module Mengpaneel
   module Strategy
@@ -9,7 +10,7 @@ module Mengpaneel
 
         return true if all_calls[:tracking].blank?
 
-        MengPaneelWorker.perform_later(all_calls.with_indifferent_access, controller.try(:request).try(:remote_ip))
+        MengPaneelWorker.perform_later(all_calls.to_json, controller.try(:request).try(:remote_ip))
 
         true
       end
@@ -23,7 +24,8 @@ module Mengpaneel
         class MengPaneelWorker < ::ActiveJob::Base
           queue_as :default
 
-          def perform(all_calls, remote_ip = nil)
+          def perform(all_calls_json, remote_ip = nil)
+            all_calls = JSON.parse(all_calls_json)
             Strategy::ServerSide.new(all_calls, nil, remote_ip).run
           end
         end
