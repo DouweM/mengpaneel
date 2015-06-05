@@ -9,7 +9,7 @@ module Mengpaneel
 
         return true if all_calls[:tracking].blank?
 
-        MengPaneelWorker.perform_later(all_calls, controller.try(:request).try(:remote_ip))
+        MengPaneelWorker.perform_later(all_calls.with_indifferent_access, controller.try(:request).try(:remote_ip))
 
         true
       end
@@ -24,8 +24,6 @@ module Mengpaneel
           queue_as :default
 
           def perform(all_calls, remote_ip = nil)
-            all_calls = all_calls.with_indifferent_access
-
             Strategy::ServerSide.new(all_calls, nil, remote_ip).run
           end
         end
