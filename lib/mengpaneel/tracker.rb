@@ -78,7 +78,7 @@ module Mengpaneel
         super(tracker.token)
       end
 
-      %w(set set_once increment append track_charge clear_charges delete_user).map(&:to_sym).each do |method_name|
+      %w(set set_once append track_charge clear_charges delete_user).map(&:to_sym).each do |method_name|
         define_method(method_name) do |*args|
           args.unshift(tracker.distinct_id) unless args.first == tracker.distinct_id
           super(*args)
@@ -89,6 +89,15 @@ module Mengpaneel
         message["$ip"] = tracker.remote_ip
 
         super(message)
+      end
+
+      # mixpanel-ruby only handles hash, whereas Javascript handles string and hash.
+      def increment(*args)
+        if args.first.is_a?(Hash)
+          super(tracker.distinct_id, *args)
+        elsif args.first.is_a?(String)
+          super(tracker.distinct_id, args[0] => args[1] || 1)
+        end
       end
     end
   end
