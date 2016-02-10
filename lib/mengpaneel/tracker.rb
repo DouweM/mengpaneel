@@ -36,6 +36,10 @@ module Mengpaneel
     def identify(distinct_id)
       @distinct_id = distinct_id
     end
+    
+    def get_distinct_id
+      @distinct_id
+    end
 
     def register(properties)
       @properties.merge!(properties)
