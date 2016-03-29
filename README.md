@@ -131,6 +131,13 @@ Second, configure Mengpaneel with your Mixpanel token:
 Mengpaneel.configure do |config|
   config.token = "abc123" # or use ENV["MIXPANEL_TOKEN"] if you're into 12-factor. It's not set automatically though, you still have to put that line.
 end
+
+# Prevent local SSL errors described in https://github.com/mixpanel/mixpanel-ruby/issues/83
+if Rails.env.development?
+  Mixpanel.config_http do |http|
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  end
+end
 ```
 
 Third, include Mengpaneel in the controller(s) you plan to track Mixpanel events from. Include it in your `ApplicationController` if you want to use Mixpanel _everywhere_:
