@@ -7,7 +7,7 @@ module Mengpaneel
     extend ActiveSupport::Concern
 
     included do
-      prepend_around_filter :wrap_in_mengpaneel
+      prepend_around_action :wrap_in_mengpaneel
 
       delegate :mixpanel, to: :mengpaneel
 
