@@ -1,5 +1,6 @@
 require "mengpaneel/strategy/base"
 require "mengpaneel/strategy/server_side"
+require "json"
 
 module Mengpaneel
   module Strategy
@@ -9,23 +10,22 @@ module Mengpaneel
 
         return true if all_calls[:tracking].blank?
 
-        Worker.perform_async(all_calls, controller.try(:request).try(:remote_ip))
+        MengPaneelWorker.perform_later(all_calls.to_json, controller.try(:request).try(:remote_ip))
 
         true
       end
 
       private
         def self.async?
-          defined?(::Sidekiq)
+          defined?(::ActiveJob)
         end
 
       if async?
-        class Worker
-          include Sidekiq::Worker
+        class MengPaneelWorker < ::ActiveJob::Base
+          queue_as :default
 
-          def perform(all_calls, remote_ip = nil)
-            all_calls = all_calls.with_indifferent_access
-            
+          def perform(all_calls_json, remote_ip = nil)
+            all_calls = JSON.parse(all_calls_json)
             Strategy::ServerSide.new(all_calls, nil, remote_ip).run
           end
         end
