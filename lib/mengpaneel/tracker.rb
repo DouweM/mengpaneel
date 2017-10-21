@@ -34,7 +34,7 @@ module Mengpaneel
     end
 
     def identify(distinct_id)
-      @distinct_id = distinct_id
+      @distinct_id = DistinctId.new(distinct_id)
     end
 
     def register(properties)
@@ -78,9 +78,9 @@ module Mengpaneel
         super(tracker.token)
       end
 
-      %w(set set_once increment append track_charge clear_charges delete_user).map(&:to_sym).each do |method_name|
+      %w(set set_once append track_charge clear_charges delete_user).map(&:to_sym).each do |method_name|
         define_method(method_name) do |*args|
-          args.unshift(tracker.distinct_id) unless args.first == tracker.distinct_id
+          args.unshift(tracker.distinct_id) unless args.first.is_a?(DistinctId)
           super(*args)
         end
       end
@@ -90,6 +90,21 @@ module Mengpaneel
 
         super(message)
       end
+
+      # mixpanel-ruby only handles hash, whereas Javascript handles string and hash.
+      def increment(*args)
+        args.shift if args.first.is_a?(DistinctId)
+        case args.first
+          when Hash
+            super(tracker.distinct_id, *args)
+          when String
+            super(tracker.distinct_id, args[0] => args[1] || 1)
+          else
+            raise ArgumentError, 'The first argument of increment must be either a hash or a string'
+        end
+      end
     end
   end
+
+  class DistinctId < String; end
 end
